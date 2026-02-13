@@ -1,2 +1,48 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+:root {
+  --bg-0: #020617;
+  --bg-1: #0b1120;
+  --bg-2: #1e1b4b;
+  --accent-0: #7c3aed;
+  --accent-1: #4f46e5;
+  --ring: rgba(139, 92, 246, 0.35);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(124, 58, 237, 0.23), transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, rgba(79, 70, 229, 0.2), transparent 55%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 50%, #000 100%);
+}
+
+@layer components {
+  .panel-glass {
+    @apply border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_20px_60px_-30px_rgba(124,58,237,0.55)];
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-white/10 bg-slate-900/60 shadow-[0_20px_50px_-30px_rgba(0,0,0,0.85)];
+  }
+
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950;
+  }
+}
+
+.btn,
+button,
+a {
+  transition: all 220ms ease;
+}
+
+.btn:active,
+button:active {
+  transform: scale(0.98);
+}

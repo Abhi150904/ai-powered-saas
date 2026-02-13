@@ -70,43 +70,47 @@ const socialFormats = {
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-            document.body.removeChild(link);
         })
     }
 
 
     return (
-        <div className="container mx-auto p-4 max-w-4xl">
-          <h1 className="text-3xl font-bold mb-6 text-center">
-            Social Media Image Creator
-          </h1>
+        <div className="max-w-4xl space-y-6">
+          <section className="panel-glass rounded-2xl p-6 md:p-8 text-center">
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-100">
+              Social Media Image Creator
+            </h1>
+            <p className="mt-2 text-slate-300/80">
+              Generate perfectly sized images for each channel with one upload.
+            </p>
+          </section>
 
-          <div className="card">
-            <div className="card-body">
-              <h2 className="card-title mb-4">Upload an Image</h2>
+          <div className="surface-card">
+            <div className="card-body p-6 md:p-8">
+              <h2 className="card-title mb-4 text-slate-100">Upload an Image</h2>
               <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Choose an image file</span>
+                <label className="label pb-2">
+                  <span className="label-text text-slate-200">Choose an image file</span>
                 </label>
                 <input
                   type="file"
                   onChange={handleFileUpload}
-                  className="file-input file-input-bordered file-input-primary w-full"
+                  className="file-input w-full rounded-xl border-white/15 bg-slate-900/70 text-slate-200 focus-ring"
                 />
               </div>
 
               {isUploading && (
                 <div className="mt-4">
-                  <progress className="progress progress-primary w-full"></progress>
+                  <progress className="progress w-full"></progress>
                 </div>
               )}
 
               {uploadedImage && (
                 <div className="mt-6">
-                  <h2 className="card-title mb-4">Select Social Media Format</h2>
+                  <h2 className="card-title mb-4 text-slate-100">Select Social Media Format</h2>
                   <div className="form-control">
                     <select
-                      className="select select-bordered w-full"
+                      className="select w-full rounded-xl border-white/15 bg-slate-900/70 text-slate-100 focus-ring"
                       value={selectedFormat}
                       onChange={(e) =>
                         setSelectedFormat(e.target.value as SocialFormat)
@@ -121,10 +125,10 @@ const socialFormats = {
                   </div>
 
                   <div className="mt-6 relative">
-                    <h3 className="text-lg font-semibold mb-2">Preview:</h3>
-                    <div className="flex justify-center">
+                    <h3 className="text-lg font-semibold mb-3 text-slate-100">Preview</h3>
+                    <div className="flex justify-center rounded-2xl border border-white/10 bg-slate-950/60 p-4">
                       {isTransforming && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-base-100 bg-opacity-50 z-10">
+                        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/40 z-10 rounded-2xl">
                           <span className="loading loading-spinner loading-lg"></span>
                         </div>
                       )}
@@ -137,6 +141,7 @@ const socialFormats = {
                         crop="fill"
                         aspectRatio={socialFormats[selectedFormat].aspectRatio}
                         gravity='auto'
+                        className="rounded-xl"
                         ref={imageRef}
                         onLoad={() => setIsTransforming(false)}
                         />
@@ -144,7 +149,10 @@ const socialFormats = {
                   </div>
 
                   <div className="card-actions justify-end mt-6">
-                    <button className="btn btn-primary" onClick={handleDownload}>
+                    <button
+                      className="btn h-11 rounded-xl border-0 bg-linear-to-r from-violet-500 to-indigo-500 px-6 text-white shadow-[0_12px_32px_-10px_rgba(124,58,237,0.9)] hover:from-violet-400 hover:to-indigo-400 focus-ring"
+                      onClick={handleDownload}
+                    >
                       Download for {selectedFormat}
                     </button>
                   </div>
