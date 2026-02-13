@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import { auth } from '@clerk/nextjs/server';
 
+const cloudName =
+    process.env.CLOUDINARY_CLOUD_NAME?.trim() ||
+    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
+const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY?.trim();
+const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
+
 // Configuration
 cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View Credentials' below to copy your API secret
+    cloud_name: cloudName,
+    api_key: cloudinaryApiKey,
+    api_secret: cloudinaryApiSecret
 });
 
 interface CloudinaryUploadResult {
@@ -22,6 +28,13 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+        if (!cloudName || !cloudinaryApiKey || !cloudinaryApiSecret) {
+            return NextResponse.json(
+                { error: "Cloudinary credentials are missing or invalid" },
+                { status: 500 }
+            );
+        }
+
         const formData = await request.formData();
         const file = formData.get("file") as File | null;
 
@@ -53,9 +66,16 @@ export async function POST(request: NextRequest) {
             }
         )
 
-    } catch (error) {
+    } catch (error: any) {
         console.log("UPload image failed", error)
-        return NextResponse.json({error: "Upload image failed"}, {status: 500})
+        return NextResponse.json(
+            {
+                error: "Upload image failed",
+                details: error?.message ?? "Unknown Cloudinary error",
+                cloudName
+            },
+            { status: 500 }
+        )
     }
 
 }

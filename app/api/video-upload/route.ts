@@ -6,11 +6,17 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient()
 
+const cloudName =
+    process.env.CLOUDINARY_CLOUD_NAME?.trim() ||
+    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
+const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY?.trim();
+const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
+
 // Configuration
 cloudinary.config({
-    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View Credentials' below to copy your API secret
+    cloud_name: cloudName,
+    api_key: cloudinaryApiKey,
+    api_secret: cloudinaryApiSecret
 });
 
 interface CloudinaryUploadResult {
@@ -30,11 +36,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-    if(
-        !process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ||
-        !process.env.CLOUDINARY_API_KEY ||
-        !process.env.CLOUDINARY_API_SECRET
-    ){
+    if(!cloudName || !cloudinaryApiKey || !cloudinaryApiSecret){
         return NextResponse.json({error: "Cloudinary credentials not found"}, {status: 500})
     }
 
