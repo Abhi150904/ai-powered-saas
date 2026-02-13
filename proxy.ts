@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 const isPublicRoute = createRouteMatcher(['/sign-in', '/sign-up', '/', '/home'])
 
-const isPublicApiRoute = createRouteMatcher(['/api/videos'])
+const isPublicApiRoute = createRouteMatcher(['/api/video'])
 
 export default clerkMiddleware(async (auth, req) => {
     const {userId} = await auth();
