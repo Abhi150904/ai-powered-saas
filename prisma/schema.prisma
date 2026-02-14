@@ -15,6 +15,7 @@ datasource db {
 
 model Video{
   id String @id @default(cuid())
+  userId String?
   title String
   description String?
   publicId String
@@ -23,4 +24,6 @@ model Video{
   duration Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
 }
