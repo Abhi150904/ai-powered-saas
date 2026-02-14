@@ -26,14 +26,32 @@ function VideoUpload() {
         }
 
         setIsUploading(true)
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("title", title);
-        formData.append("description", description);
-        formData.append("originalSize", file.size.toString());
 
         try {
-            await axios.post("/api/video-upload", formData)
+            const signResponse = await axios.get("/api/video-upload/signature");
+            const { cloudName, apiKey, timestamp, folder, signature } = signResponse.data;
+
+            const cloudinaryFormData = new FormData();
+            cloudinaryFormData.append("file", file);
+            cloudinaryFormData.append("api_key", apiKey);
+            cloudinaryFormData.append("timestamp", String(timestamp));
+            cloudinaryFormData.append("signature", signature);
+            cloudinaryFormData.append("folder", folder);
+            cloudinaryFormData.append("resource_type", "video");
+
+            const uploadResponse = await axios.post(
+              `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`,
+              cloudinaryFormData
+            );
+
+            await axios.post("/api/video-upload", {
+              title,
+              description,
+              publicId: uploadResponse.data.public_id,
+              originalSize: String(file.size),
+              compressedSize: String(uploadResponse.data.bytes || file.size),
+              duration: Number(uploadResponse.data.duration || 0),
+            });
             router.push("/home")
         } catch (error: unknown) {
             console.log(error)

@@ -1,28 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
-
-
-const cloudName =
-    process.env.CLOUDINARY_CLOUD_NAME?.trim() ||
-    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME?.trim();
-const cloudinaryApiKey = process.env.CLOUDINARY_API_KEY?.trim();
-const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
-
-// Configuration
-cloudinary.config({
-    cloud_name: cloudName,
-    api_key: cloudinaryApiKey,
-    api_secret: cloudinaryApiSecret
-});
-
-interface CloudinaryUploadResult {
-    public_id: string;
-    bytes: number;
-    duration?: number
-    [key: string]: any
-}
 
 export async function POST(request: NextRequest) {
     try {
@@ -31,54 +9,35 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        if (!cloudName || !cloudinaryApiKey || !cloudinaryApiSecret) {
-            return NextResponse.json({ error: "Cloudinary credentials not configured on server" }, { status: 500 })
-        }
-
-        const formData = await request.formData();
-        const file = formData.get("file") as File | null;
-        const title = String(formData.get("title") || "").trim();
-        const description = String(formData.get("description") || "").trim();
-        const originalSize = String(formData.get("originalSize") || "");
-
-        if (!file) {
-            return NextResponse.json({ error: "File not found" }, { status: 400 })
-        }
+        const body = await request.json();
+        const title = String(body?.title || "").trim();
+        const description = String(body?.description || "").trim();
+        const publicId = String(body?.publicId || "").trim();
+        const originalSize = String(body?.originalSize || "").trim();
+        const compressedSize = String(body?.compressedSize || "").trim();
+        const duration = Number(body?.duration || 0);
 
         if (!title) {
             return NextResponse.json({ error: "Title is required" }, { status: 400 })
         }
 
-        const bytes = await file.arrayBuffer()
-        const buffer = Buffer.from(bytes)
+        if (!publicId) {
+            return NextResponse.json({ error: "Cloudinary publicId is required" }, { status: 400 })
+        }
 
-        const result = await new Promise<CloudinaryUploadResult>(
-            (resolve, reject) => {
-                const uploadStream = cloudinary.uploader.upload_stream(
-                    {
-                        resource_type: "video",
-                        folder: "video-uploads",
-                        transformation: [
-                            {quality: "auto", fetch_format: "mp4"},
-                        ]
-                    },
-                    (error, result) => {
-                        if(error) reject(error);
-                        else resolve(result as CloudinaryUploadResult);
-                    }
-                )
-                uploadStream.end(buffer)
-            }
-        )
+        if (!originalSize || !compressedSize) {
+            return NextResponse.json({ error: "Video size metadata is required" }, { status: 400 })
+        }
+
         const video = await prisma.video.create({
             data: {
                 userId,
                 title,
                 description: description || null,
-                publicId: result.public_id,
+                publicId,
                 originalSize: originalSize,
-                compressedSize: String(result.bytes),
-                duration: result.duration || 0,
+                compressedSize,
+                duration: Number.isFinite(duration) ? duration : 0,
             }
         })
         return NextResponse.json(video)
