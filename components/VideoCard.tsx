@@ -16,6 +16,7 @@ interface VideoCardProps {
 const  VideoCard: React.FC<VideoCardProps> = ({video, onDownload}) => {
     const [isHovered, setIsHovered] = useState(false)
     const [previewError, setPreviewError] = useState(false)
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
 
     const getThumbnailUrl = useCallback((publicId: string) => {
         return getCldImageUrl({
@@ -42,12 +43,9 @@ const  VideoCard: React.FC<VideoCardProps> = ({video, onDownload}) => {
     const getPreviewVideoUrl = useCallback((publicId: string) => {
         return getCldVideoUrl({
             src: publicId,
-            width: 400,
-            height: 225,
-            crop: "fill",
             quality: "auto",
-            format: "mp4",
-            rawTransformations: ["so_0", "du_8"]
+            format: "auto:video",
+            rawTransformations: ["so_0,du_8"]
 
         })
     }, [])
@@ -85,9 +83,15 @@ const  VideoCard: React.FC<VideoCardProps> = ({video, onDownload}) => {
                 <div className="w-full h-full flex items-center justify-center bg-slate-900/80">
                   <p className="text-error font-medium">Preview not available</p>
                 </div>
+              ) : !cloudName ? (
+                <div className="w-full h-full flex items-center justify-center bg-slate-900/80">
+                  <p className="text-error font-medium">Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME</p>
+                </div>
               ) : (
                 <video
                   src={getPreviewVideoUrl(video.publicId)}
+                  poster={getThumbnailUrl(video.publicId)}
+                  preload="metadata"
                   autoPlay
                   muted
                   loop
