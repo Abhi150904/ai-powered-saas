@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint"
   },
@@ -20,6 +21,7 @@
     "lucide-react": "^0.564.0",
     "next": "16.1.6",
     "next-cloudinary": "^6.17.5",
+    "prisma": "^7.4.0",
     "pg": "^8.18.0",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -33,7 +35,6 @@
     "daisyui": "^5.5.18",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "prisma": "^7.4.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5"
   }
