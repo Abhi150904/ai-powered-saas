@@ -35,9 +35,18 @@ function VideoUpload() {
         try {
             await axios.post("/api/video-upload", formData)
             router.push("/home")
-        } catch (error) {
+        } catch (error: unknown) {
             console.log(error)
-            setNotification("Upload failed. Please try again.")
+            if (axios.isAxiosError(error)) {
+              const apiMessage = error.response?.data?.error
+              if (typeof apiMessage === "string" && apiMessage.trim()) {
+                setNotification(apiMessage)
+              } else {
+                setNotification("Upload failed. Please try again.")
+              }
+            } else {
+              setNotification("Upload failed. Please try again.")
+            }
         } finally{
             setIsUploading(false)
         }

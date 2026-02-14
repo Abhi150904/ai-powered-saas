@@ -25,28 +25,28 @@ interface CloudinaryUploadResult {
 }
 
 export async function POST(request: NextRequest) {
-
-
     try {
-
         const { userId } = await auth();
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-    if(!cloudName || !cloudinaryApiKey || !cloudinaryApiSecret){
-        return NextResponse.json({error: "Cloudinary credentials not found"}, {status: 500})
-    }
-
+        if (!cloudName || !cloudinaryApiKey || !cloudinaryApiSecret) {
+            return NextResponse.json({ error: "Cloudinary credentials not configured on server" }, { status: 500 })
+        }
 
         const formData = await request.formData();
         const file = formData.get("file") as File | null;
-        const title = formData.get("title") as string;
-        const description = formData.get("description") as string;
-        const originalSize = formData.get("originalSize") as string;
+        const title = String(formData.get("title") || "").trim();
+        const description = String(formData.get("description") || "").trim();
+        const originalSize = String(formData.get("originalSize") || "");
 
-        if(!file){
-            return NextResponse.json({error: "File not found"}, {status: 400})
+        if (!file) {
+            return NextResponse.json({ error: "File not found" }, { status: 400 })
+        }
+
+        if (!title) {
+            return NextResponse.json({ error: "Title is required" }, { status: 400 })
         }
 
         const bytes = await file.arrayBuffer()
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
             data: {
                 userId,
                 title,
-                description,
+                description: description || null,
                 publicId: result.public_id,
                 originalSize: originalSize,
                 compressedSize: String(result.bytes),
@@ -83,9 +83,19 @@ export async function POST(request: NextRequest) {
         })
         return NextResponse.json(video)
 
-    } catch (error) {
-        console.log("UPload video failed", error)
-        return NextResponse.json({error: "UPload video failed"}, {status: 500})
+    } catch (error: unknown) {
+        console.error("Video upload failed:", error)
+
+        const message = error instanceof Error ? error.message : "Unknown server error"
+
+        if (message.includes('column "userId"') || message.includes("Video_userId_createdAt_idx")) {
+            return NextResponse.json(
+                { error: "Database is not migrated yet. Run Prisma migration in production." },
+                { status: 500 }
+            )
+        }
+
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 
 }
